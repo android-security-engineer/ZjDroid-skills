@@ -1,0 +1,66 @@
+# 构建 VitePress 文档站并部署到 GitHub Pages
+#
+# 触发条件：推送到 master 分支、或手动触发
+# 部署方式：官方 Pages Artifact（需在仓库 Settings → Pages → Source 选择 "GitHub Actions"）
+# 访问地址：https://android-security-engineer.github.io/ZjDroid-skills/
+name: Deploy VitePress site to Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'website/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+# 允许 GitHub Pages 部署所需的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一分支的新推送会取消正在进行的旧部署，避免并发
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        working-directory: website
+        run: npm ci || npm install
+
+      - name: Build with VitePress
+        working-directory: website
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

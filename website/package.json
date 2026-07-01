@@ -1,0 +1,14 @@
+{
+  "name": "zjdroid-docs",
+  "version": "1.0.0",
+  "description": "ZjDroid 项目文档站 - 基于 Xposed 的 Android 动态逆向工具教学站点",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
+  }
+}
