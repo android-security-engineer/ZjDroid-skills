@@ -51,3 +51,19 @@ public class InstructionOffsetMap {
 ## 📌 小结
 
 `InstructionOffsetMap` 是一个简单但高效的数据结构，通过 `Arrays.binarySearch` 实现 O(log n) 的偏移查询。在 `MutableMethodImplementation` 的构造函数中，它被用于将 debug item 和 try block 的 code address 快速映射到对应的 `MethodLocation` 索引。
+
+### 索引 ↔ 偏移双向查询
+
+```mermaid
+flowchart LR
+    subgraph BUILD["构造（O(n)）"]
+        I["指令列表"] --> AC["累加 codeOffset<br/>按 getCodeUnits 递增"]
+        AC --> ARR["int[] instructionCodeOffsets<br/>（有序数组）"]
+    end
+
+    ARR --> Q1["getInstructionIndexAtCodeOffset<br/>Arrays.binarySearch"]
+    ARR --> Q2["getInstructionCodeOffset<br/>直接下标 O(1)"]
+
+    Q1 -->|"exact=true 精确命中"| E1["未命中抛 InvalidInstructionOffset"]
+    Q1 -->|"exact=false 向前取整"| E2["返回 (~index)-1<br/>覆盖该偏移的指令"]
+```

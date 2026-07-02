@@ -99,6 +99,61 @@ src/com/android/reverse/
     └── MainActivity.java              # 模块自身的 Activity（占位）
 ```
 
+## 源码目录结构图
+
+`com.android.reverse` 下 8 个子包及职责，按"入口→分发→采集→底层"的依赖方向组织：
+
+```mermaid
+flowchart TD
+    subgraph mod["mod 模块入口"]
+        M["ReverseXposedModule<br/>(IXposedHookLoadPackage)"]
+        BR["CommandBroadcastReceiver<br/>(广播接收)"]
+    end
+    subgraph request["request 指令分发"]
+        RP["CommandHandlerParser<br/>(JSON 解析+分发)"]
+        H["各 CommandHandler<br/>(7 条指令实现)"]
+    end
+    subgraph collecter["collecter 采集器"]
+        DC["DexFileInfoCollecter"]
+        MB["MemoryBackSmali"]
+        MD["MemDump / HeapDump"]
+        LS["LuaScriptInvoker"]
+    end
+    subgraph smali["smali 反汇编重组"]
+        DF["DexFileHeadersPointer<br/>DexFileBuilder"]
+    end
+    subgraph apimonitor["apimonitor 17 类监控"]
+        AM["ApiMonitorHookManager<br/>+ 17 个 *Hook"]
+    end
+    subgraph hook["hook Hook 框架"]
+        HH["HookHelper 接口/工厂<br/>Xposed 实现"]
+    end
+    subgraph util["util 工具"]
+        NF["NativeFunction(JNI 桥)"]
+        RI["RefInvoke(反射)"]
+        LG["Logger / JsonWriter"]
+    end
+    subgraph client["client 占位"]
+        CA["MainActivity"]
+    end
+
+    BR -->|"parserCommand"| RP
+    RP --> H
+    H --> collecter
+    MB --> smali
+    DC -->|"openDexFileNative"| NF
+    collecter --> util
+    apimonitor --> hook
+    hook --> util
+    M --> BR
+    M -->|"hookLoadPackage"| DC
+    M -->|"hookLoadPackage"| AM
+```
+
+::: tip 包之间的依赖方向
+`mod` 是唯一入口，挂载时同时初始化 `collecter`（脱壳能力）和 `apimonitor`（监控能力）；`request` 仅在收到广播时被 `mod` 触发；`smali` 为 `collecter` 的脱壳提供重组能力；`hook` 是 `apimonitor` 的底层抽象；`util` 被几乎所有包依赖（JNI、反射、日志）。`client` 是占位 Activity，与核心逻辑无依赖。
+:::
+
 ## native 库
 
 ```

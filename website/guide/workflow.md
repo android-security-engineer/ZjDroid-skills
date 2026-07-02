@@ -2,6 +2,23 @@
 
 把前面分散的内容串起来，从全局视角看 ZjDroid 一次完整调用经历了哪些环节。
 
+### 完整脱壳工作流
+
+```mermaid
+flowchart LR
+    A["dump_dexinfo"] -->|"列出所有 DEX + mCookie"| B["定位可疑加密 DEX"]
+    B --> C["dump_class"]
+    C -->|"枚举该 DEX 类名"| D["定位业务逻辑类"]
+    D --> E["backsmali"]
+    E -->|"内存反编译+重组"| F["dexfile.dex"]
+    F --> G["adb pull 到 PC"]
+    G --> H["jadx / baksmali 阅读真实代码"]
+    H --> I{"发现解密函数?"}
+    I -->|"是"| J["invoke Lua<br/>进程内调用解密数据"]
+    I -->|"否"| K["分析完成"]
+    J --> K
+```
+
 ## 生命周期
 
 ```

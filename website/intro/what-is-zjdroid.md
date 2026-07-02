@@ -41,6 +41,19 @@
 └──────────────────────────────────────────────────────────┘
 ```
 
+### 整体定位
+
+```mermaid
+flowchart LR
+    A["Xposed 模块<br/>com.android.reverse"] -->|"注入目标进程"| B["目标 App 进程"]
+    B -->|"hook Dalvik 内部结构"| C["openDexFileNative / mCookie / DexFile"]
+    D["分析者的 PC"] -->|"adb shell am broadcast<br/>-a com.zjdroid.invoke"| E["CommandBroadcastReceiver"]
+    E --> C
+    C -->|"JNI 调用 libdvmnative.so<br/>直读 Dalvik 内存"| F["明文 DEX / 内存数据"]
+    F -->|"Logger.log()"| G["logcat 回传<br/>zjdroid-shell-* / zjdroid-apimonitor-*"]
+    G -->|"adb logcat"| D
+```
+
 ## 八大能力
 
 | 能力 | 作用 |

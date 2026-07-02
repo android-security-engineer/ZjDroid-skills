@@ -54,3 +54,16 @@ public class ImmutableInstruction10x extends ImmutableInstruction implements Ins
 ## 📌 小结
 
 `ImmutableInstruction10x` 虽然结构最简单，但在 DEX 分析中有重要意义：大量连续 `nop` 是加壳工具常用的填充手段，`return-void` 是无返回值方法的唯一合法结束指令。理解此格式有助于识别混淆 padding。
+
+### 类关系与字节布局
+
+```mermaid
+flowchart TD
+    I["Instruction10x（接口）"] -->|"implements"| A["ImmutableInstruction"]
+    A -->|"extends"| C["ImmutableInstruction10x"]
+    C -->|"of() 幂等转换"| C
+    C --> F["FORMAT = Format.Format10x<br/>getCodeUnits() 恒为 1"]
+
+    FMT["2 字节布局"] --> B1["opcode（nop=0x00 / return-void=0x0e）"]
+    FMT --> B2["0x00 填充对齐"]
+```

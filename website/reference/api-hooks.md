@@ -4,6 +4,59 @@ ZjDroid 自动监控的 17 类敏感 API 完整清单。所有输出走 logcat t
 
 源码位于 [`src/com/android/reverse/apimonitor/`](https://github.com/android-security-engineer/ZjDroid-skills/tree/master/src/com/android/reverse/apimonitor)。
 
+## 17 类监控分类
+
+::: tip 为什么是 17 类不是 20 类
+`apimonitor` 目录下有 20 个 `.java` 文件，但其中 `AbstractBahaviorHookCallBack`（通用回调基类）、`ApiMonitorHook`（Hook 抽象基类）、`ApiMonitorHookManager`（监控管理器）是框架/管理类，不监控具体 API。真正 Hook 具体敏感 API 的类共 **17 个**，按域分四组如下。
+:::
+
+```mermaid
+mindmap
+  root((API 监控<br/>17 类))
+    通信
+      SmsManagerHook
+        sendTextMessage
+        getAllMessagesFromIcc
+      TelephonyManagerHook
+        getLine1Number
+        listen
+      ConnectivityManagerHook
+        getActiveNetworkInfo
+      NetWorkHook
+        URL.openConnection
+        AbstractHttpClient.execute
+    媒体
+      CameraHook
+        takePicture
+        setPreviewCallback
+      AudioRecordHook
+        AudioRecord init
+      MediaRecorderHook
+        start / stop
+    数据
+      ContentResolverHook
+        query / insert / update / delete
+      AccountManagerHook
+        getAccounts
+    进程与系统
+      RuntimeHook
+        Runtime.exec
+      ProcessBuilderHook
+        ProcessBuilder.start
+      ActivityManagerHook
+        killBackgroundProcesses
+      ActivityThreadHook
+        Receiver 调度
+      ContextImplHook
+        registerReceiver
+      PackageManagerHook
+        installPackage / deletePackage
+      NotificationManagerHook
+        notify
+      AlarmManagerHook
+        set
+```
+
 ## 1. 短信（SmsManagerHook）
 
 | 监控方法 | 行为 |

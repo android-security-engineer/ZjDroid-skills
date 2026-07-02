@@ -76,6 +76,18 @@ public byte[] readBytes(int addr, int length) {
 
 `libdvmnative.so` 的 `dumpMemory` 直接以目标进程身份读取 `[start, start+length)` 这段内存，返回 `ByteBuffer`。由于 ZjDroid 已注入目标进程，它和目标同进程，能合法访问目标内存空间。
 
+整个 dump 流程：
+
+```mermaid
+flowchart LR
+    A["指令参数<br/>startaddr, length"] --> B["DumpMemCommandHandler"]
+    B --> C["MemDump.dumpMem"]
+    C --> D["NativeFunction.dumpMemory(start, length)<br/>JNI native 调用"]
+    D --> E["ByteBuffer<br/>（小端序）"]
+    E --> F["分块 8KB 写入文件<br/>/data/data/包名/files/startaddr"]
+```
+
+
 ::: tip 同进程的优势
 因为是 Xposed 注入、和目标同进程同权限，`dumpMemory` 不需要 `ptrace`，没有跨进程读内存的开销和权限问题。这也是 ZjDroid 内存 dump 比 PC 端工具（如通过 gdbserver）更顺手的原因。
 :::

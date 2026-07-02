@@ -73,3 +73,18 @@ public static String getFieldDescriptor(FieldReference fieldReference) {
 ## 📌 小结
 
 `ReferenceUtil` 是 ZjDroid 的 smali 输出模块生成方法/字段签名的直接调用点。在 `MemoryBackSmali` 输出 `.smali` 文件时，每个 `invoke-*` 指令的方法引用都通过 `getMethodDescriptor()` 格式化为标准 smali 语法字符串。
+
+### getReferenceString 分发流程
+
+```mermaid
+flowchart TD
+    IN["getReferenceString(Reference)"]
+    IN --> C1{"instanceof"}
+    C1 -->|"StringReference"| R1["\"...\"（带引号字符串）"]
+    C1 -->|"TypeReference"| R2["type（类型描述符）"]
+    C1 -->|"FieldReference"| R3["getFieldDescriptor<br/>Lcom/A;->field:I"]
+    C1 -->|"MethodReference"| R4["getMethodDescriptor<br/>Lcom/A;->m(II)V"]
+    C1 -->|"其他"| R5["null"]
+
+    R4 --> SHORT["getShortMethodDescriptor<br/>m(II)V（省略 defining class）"]
+```

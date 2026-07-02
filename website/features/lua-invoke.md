@@ -80,6 +80,28 @@ ZjDroid 给 Lua 环境注入了两个函数：
 - **`log(msg)`**：把字符串打到 logcat（走 `zjdroid-shell` tag）；
 - **`tostring(obj)`**：把 Java 对象序列化成 JSON 打印出来（用 `JsonWriter`）。
 
+从 so 加载到脚本执行的完整流程：
+
+```mermaid
+flowchart TD
+    A["hook findLibrary<br/>重定向 luajava 查找"] --> A1["返回 /data/data/com.android.reverse/lib/libluajava.so"]
+    A1 --> B["System.loadLibrary 加载成功"]
+    B --> C["LuaStateFactory.newLuaState<br/>新建 Lua 解释器"]
+    C --> D["luaState.openLibs<br/>打开标准库"]
+    D --> E["initLuaContext 注册两个 JavaFunction<br/>log / tostring"]
+    E --> F["luaState.LdoFile 执行脚本"]
+```
+
+Lua 脚本调用 Java 的桥接路径（以 `tostring` 为例）：
+
+```mermaid
+flowchart LR
+    A["Lua 脚本调用<br/>tostring(obj)"] --> B["JavaFunction.execute<br/>luajava 回调"]
+    B --> C["JsonWriter.parserInstanceToJson<br/>序列化 Java 对象"]
+    C --> D["Logger.log<br/>输出到 logcat"]
+```
+
+
 ::: tip luajava 的魔法
 luajava 让 Lua 脚本能直接 `import` Java 类、调用 Java 方法、访问字段。比如在 Lua 里：
 

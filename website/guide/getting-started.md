@@ -2,6 +2,16 @@
 
 使用 ZjDroid 前，你需要准备好以下环境。
 
+### 上手 5 步流程
+
+```mermaid
+flowchart LR
+    S1["1. 装 Xposed<br/>Framework"] --> S2["2. 启用 ZjDroid 模块<br/>Xposed Installer 勾选"]
+    S2 --> S3["3. 重启目标 App<br/>（软重启设备）"]
+    S3 --> S4["4. adb 发广播<br/>am broadcast -a com.zjdroid.invoke"]
+    S4 --> S5["5. logcat 看结果<br/>zjdroid-shell-*"]
+```
+
 ## 设备侧
 
 ::: warning 时代要求

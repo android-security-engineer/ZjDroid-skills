@@ -44,6 +44,17 @@ dalvik.system.DexFile.getClassNameList(int mCookie)
 
 这是 Dalvik 内部用来枚举 DEX 类列表的方法（虽然不是公开 API）。给定 `mCookie`，它返回该 DEX 所有类的全限定名数组。
 
+整个流程如下：
+
+```mermaid
+flowchart LR
+    A["dexpath<br/>指令参数"] --> B["getCookie(dexPath)<br/>按路径反查"]
+    B --> C["mCookie : int"]
+    C --> D["反射调用<br/>Dalvik DexFile.getClassNameList(mCookie)"]
+    D --> E["String[] 类名数组<br/>（内部描述符形式）"]
+```
+
+
 ::: tip 为什么能直接调用
 `getClassNameList` 是 `DexFile` 类里的一个方法，只是对普通应用不可见（无公开文档）。但 ZjDroid 通过反射 `RefInvoke.invokeStaticMethod` 可以无视可见性直接调用它——反正目标进程里这个方法就在那里。这比自己解析 DEX 二进制结构简单得多，而且一定和 Dalvik 实际认知一致。
 :::

@@ -95,16 +95,34 @@ public HashMap<String, DexFileInfo> dumpDexFileInfo() {
 ::: tip 为什么用反射读 pathList
 Dalvik 的 `BaseDexClassLoader` 把加载的 DEX 列表藏在 `pathList.dexElements` 这个私有字段里，每个 `Element` 又持有 `dexFile`（含 `mCookie`）。这些字段都是私有的，只能靠反射逐层取出。这正是 DexPathList 的内部结构：
 
-```
-PathClassLoader
-   └─ pathList : DexPathList
-         └─ dexElements : Element[]
-               └─ Element
-                     └─ dexFile : DexFile
-                           ├─ mFileName : String
-                           └─ mCookie   : int   ← 内存句柄
+```mermaid
+flowchart TD
+    A["PathClassLoader"] --> B["pathList : DexPathList"]
+    B --> C["dexElements : Element[]"]
+    C --> D["Element"]
+    D --> E["dexFile : DexFile"]
+    E --> F["mFileName : String"]
+    E --> G["mCookie : int （内存句柄）"]
 ```
 :::
+
+## dump_dexinfo 数据来源合并图
+
+`dump_dexinfo` 把两个来源合并成一张表，输出每个 DEX 的路径与 `mCookie`：
+
+```mermaid
+flowchart LR
+    subgraph 来源A["来源 A：动态加载表"]
+        A1["hook openDexFileNative<br/>捕获每次加载"] --> A2["dynLoadedDexInfo Map<br/>dexPath → mCookie"]
+    end
+    subgraph 来源B["来源 B：静态枚举"]
+        B1["反射读 PathClassLoader<br/>.pathList.dexElements"] --> B2["逐个取出 Element.dexFile<br/>mFileName + mCookie"]
+    end
+    A2 --> C["dumpDexFileInfo() 合并"]
+    B2 --> C
+    C --> D["输出：路径 + mCookie"]
+```
+
 
 ## 输出
 

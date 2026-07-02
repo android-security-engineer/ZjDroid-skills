@@ -2,6 +2,35 @@
 
 ZjDroid 提供 8 项核心能力，全部通过同一种方式驱动：`adb` 发送 `com.zjdroid.invoke` 广播，附带一条 JSON 指令。
 
+### 能力总览
+
+```mermaid
+flowchart TD
+    DRV["adb 广播 com.zjdroid.invoke<br/>+ JSON 指令"]
+
+    subgraph ACT["7 大主动指令（CommandHandlerParser 分发）"]
+        D1["dump_dexinfo<br/>列出已加载 DEX 及内存指针"]
+        D2["dump_dexfile<br/>导出内存 DEX（odex）"]
+        D3["backsmali<br/>内存反编译+重组脱壳"]
+        D4["dump_class<br/>枚举指定 DEX 类名"]
+        D5["dump_mem<br/>导出任意内存区域"]
+        D6["dump_heap<br/>导出 Java 堆 hprof"]
+        D7["invoke<br/>Lua 脚本注入调 Java"]
+    end
+
+    subgraph PAS["被动：17 类敏感 API 监控"]
+        P1["短信 / 网络 / 定位"]
+        P2["通讯录 / 录音 / 拍照"]
+        P3["Clipboard / 传感器 ..."]
+    end
+
+    DRV --> ACT
+    DRV -.->|"启动时自动 hook"| PAS
+    ACT --> OUT1["logcat: zjdroid-shell-{包名}"]
+    PAS --> OUT2["logcat: zjdroid-apimonitor-{包名}"]
+    ACT --> FILES["导出文件 /data/data/{包名}/files/"]
+```
+
 ## 能力一览表
 
 | 能力 | 指令 action | 一句话说明 | 详细原理 |

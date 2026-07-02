@@ -83,3 +83,24 @@ if (instruction instanceof Instruction21c) {
 ## 📌 小结
 
 理解 Dalvik 指令格式体系是理解 dexlib2 指令模型、`InstructionWriter` 写出逻辑和 `MethodAnalyzer` 分析逻辑的基础。ZjDroid 在 smali 重建和脱壳输出阶段，需要正确处理每种格式的操作数才能生成语义正确的 `.smali` 文件。
+
+### 格式命名解码与接口分层
+
+```mermaid
+flowchart TD
+    NAME["格式名 FormatABC"]
+    NAME --> NA["A = 指令字节数/2（code unit 数）"]
+    NAME --> NB["B = 寄存器规格（0/1/2/x/r）"]
+    NAME --> NC["C = 操作数类型<br/>x无/c引用/s立即数/t跳转偏移/i立即数"]
+
+    subgraph LAYERS["三层模型"]
+        IF["iface/instruction/formats<br/>接口约束（getter）"]
+        IM["immutable/instruction<br/>不可变实现"]
+        OP["Opcode → format 映射"]
+    end
+
+    IF --> IM
+    OP --> IM
+
+    IM --> USE["遍历时 instanceof 判断格式<br/>强转取操作数"]
+```

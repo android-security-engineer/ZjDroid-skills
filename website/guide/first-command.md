@@ -2,6 +2,28 @@
 
 ZjDroid 所有操作都通过一条广播指令驱动。我们来发第一条：获取目标 App 当前加载的 DEX 信息。
 
+### dump_dexinfo 端到端时序
+
+```mermaid
+sequenceDiagram
+    participant PC as PC（adb）
+    participant BR as CommandBroadcastReceiver
+    participant P as CommandHandlerParser
+    participant H as DumpDexInfoCommandHandler
+    participant LC as logcat
+
+    PC->>BR: am broadcast -a com.zjdroid.invoke<br/>--ei target PID --es cmd {"action":"dump_dexinfo"}
+    BR->>BR: 校验 target PID == 本进程 PID
+    BR->>P: parserCommand(cmd JSON)
+    P->>P: action == "dump_dexinfo"
+    P->>H: new DumpDexInfoCommandHandler()
+    H-->>BR: handler
+    BR->>H: 新线程 doAction()
+    H->>H: 遍历 DexFileInfoCollecter<br/>收集各 DEX 路径 + mCookie
+    H->>LC: Logger.log("the dexinfo = ...")<br/>tag: zjdroid-shell-{包名}
+    LC-->>PC: adb logcat -s zjdroid-shell-*
+```
+
 ## 指令格式
 
 ```bash

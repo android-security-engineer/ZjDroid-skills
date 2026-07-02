@@ -140,20 +140,34 @@ if (result) {
 
 ## 完整链路
 
+```mermaid
+flowchart TD
+    A["mCookie<br/>(Dalvik DexFile 句柄)"] -->|"NativeFunction.queryDexFileItemPointer<br/>libdvmnative.so: getHeaderItemPtr(cookie, version)"| B
+    B["各索引表内存指针<br/>baseAddr / pStringIds / pTypeIds / pProtoIds<br/>pFieldIds / pMethodIds / pClassDefs / classCount"] --> C
+    C["new DexBackedDexFile(opcodes, pointer, reader)<br/>MemoryReader = NativeFunction<br/>(按指针直接读内存，不落文件)"] --> D
+    D["baksmali 多线程反汇编<br/>8 线程 ExecutorService<br/>每类 → 1 个 .smali"] --> E["files/smali/*.smali"]
+    E -->|"DexFileBuilder.buildDexFile<br/>ANTLR 解析 → DexBuilder"| F["files/dexfile.dex<br/>干净的、可被 jadx 阅读的真实 DEX"]
+    F --> G["rm -rf files/smali/<br/>清理临时文件"]
 ```
-mCookie
-  │  NativeFunction.queryDexFileItemPointer (libdvmnative.so)
-  ▼
-各索引表内存指针 (baseAddr, pClassDefs, pMethodIds, ...)
-  │  DexBackedDexFile + MemoryReader (直接读内存)
-  ▼
-baksmali 多线程反汇编
-  │  (8 线程，每类一个 .smali)
-  ▼
-files/smali/*.smali
-  │  DexFileBuilder.buildDexFile
-  ▼
-files/dexfile.dex  ← 干净的、可被 jadx 反编译的真实 DEX（脱壳成功）
+
+### mCookie 到内存指针的解析
+
+`mCookie` 本身只是个整型句柄，真正有用的是它背后 Dalvik `DexFile` 结构体里记录的各索引表地址。`libdvmnative.so` 按 `version`（apiLevel）选择正确的结构体偏移，读出这些指针：
+
+```mermaid
+flowchart LR
+    subgraph Dalvik["Dalvik 内存中的 DexFile 结构体"]
+        direction TB
+        H["header<br/>magic / size / ..."]
+        S["pStringIds → string_ids 表"]
+        T["pTypeIds → type_ids 表"]
+        P["pProtoIds → proto_ids 表"]
+        F["pFieldIds → field_ids 表"]
+        M["pMethodIds → method_ids 表"]
+        C["pClassDefs → class_defs 表"]
+    end
+    MC["mCookie"] -->|"getHeaderItemPtr<br/>读结构体字段"| Dalvik
+    Dalvik -->|"打包返回"| OUT["MemoryDexFileItemPointer<br/>(7 个指针 + classCount)"]
 ```
 
 ## 为什么这样能脱壳

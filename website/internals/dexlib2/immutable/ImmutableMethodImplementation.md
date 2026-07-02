@@ -61,3 +61,20 @@ public class ImmutableMethodImplementation implements MethodImplementation {
 - 只读场景（分析、写出已有方法体）→ `ImmutableMethodImplementation`
 - 需要修改方法体（插桩、patch）→ `new MutableMethodImplementation(impl)`
 :::
+
+### 在脱壳管道中的位置与组成
+
+```mermaid
+flowchart LR
+    DB["DexBackedMethodImplementation<br/>（懒加载字节码）"] -->|"of() 幂等转换"| IM["ImmutableMethodImplementation"]
+    IM --> DP["DexPool 写出"]
+
+    subgraph IM_FIELDS["ImmutableMethodImplementation 冻结的字段"]
+        RC["registerCount"]
+        INS["ImmutableList&lt;ImmutableInstruction&gt;"]
+        TB["ImmutableList&lt;ImmutableTryBlock&gt;"]
+        DI["ImmutableList&lt;ImmutableDebugItem&gt;"]
+    end
+
+    IM -.-> IM_FIELDS
+```

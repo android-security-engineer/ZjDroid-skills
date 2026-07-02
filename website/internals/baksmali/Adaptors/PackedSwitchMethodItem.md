@@ -96,3 +96,15 @@ public boolean writeTo(IndentingWriter writer) throws IOException {
 ## 📌 小结
 
 `PackedSwitchMethodItem` 展示了 payload 指令渲染的典型模式：构造时通过逆向映射（`packedSwitchMap`）找到宿主指令，从而将裸偏移转换为有意义的标签引用。内部使用策略模式（`PackedSwitchLabelTarget` vs `PackedSwitchOffsetTarget`）处理基地址有效/无效两种情况。
+
+### 渲染流程与策略选择
+
+```mermaid
+flowchart TD
+    A["PackedSwitchMethodItem 构造"] --> B{"baseCodeAddress >= 0?<br/>能否找到宿主 packed-switch"}
+    B -->|"是（基地址有效）"| C["PackedSwitchLabelTarget<br/>case → LabelMethodItem 标签引用"]
+    B -->|"否（基地址无效）"| D["PackedSwitchOffsetTarget<br/>case → 裸偏移"]
+    C --> E["writeTo 输出<br/>.packed-switch firstKey"]
+    D --> E
+    E --> F[".end packed-switch"]
+```

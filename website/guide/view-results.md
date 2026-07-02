@@ -2,6 +2,26 @@
 
 ZjDroid 的输出分两部分：**logcat 日志**和**导出的文件**。
 
+### 结果查看流程
+
+```mermaid
+flowchart TD
+    R["目标进程产出结果"] --> L["logcat 日志"]
+    R --> F["导出文件 /data/data/{包名}/files/"]
+
+    L --> L1["zjdroid-shell-{包名}<br/>指令执行结果/进度"]
+    L --> L2["zjdroid-apimonitor-{包名}<br/>敏感 API 调用"]
+
+    F --> F1["backsmali → dexfile.dex"]
+    F --> F2["dump_dexfile → *.dex（odex）"]
+    F --> F3["dump_mem → 原始内存数据"]
+    F --> F4["dump_heap → PID.hprof"]
+
+    L1 --> G["adb logcat -s zjdroid-shell-*"]
+    F1 --> P["adb pull → PC"]
+    P --> J["jadx / baksmali / MAT 分析"]
+```
+
 ## 1. 查看日志
 
 ZjDroid 用两个 logcat tag 区分指令结果和 API 监控：

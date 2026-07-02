@@ -2,6 +2,19 @@
 
 大部分加固方案，ZjDroid 用 `backsmali` 指令即可直接脱壳。但 **ApkProtect** 这一种加固有**防修改检测**，需要额外步骤才能破解。
 
+### ApkProtect 特殊处理流程
+
+```mermaid
+flowchart TD
+    P["ApkProtect 检测到<br/>ZjDroid 以 APK 形式被 Xposed 加载"] --> X["脱壳失败"]
+    X --> S1["1. 创建可写目录<br/>mkdir /data/local; chmod 777"]
+    S1 --> S2["2. 复制 APK 并改名 .jar<br/>base.apk → /data/local/zjdroid.jar"]
+    S2 --> S3["3. 改 modules.list<br/>ZjDroid 行指向 zjdroid.jar"]
+    S3 --> S4["4. 重启设备"]
+    S4 --> S5["Xposed 从 jar 加载<br/>检测特征不再匹配"]
+    S5 --> OK["backsmali 正常脱壳 ✅"]
+```
+
 ## 问题
 
 ApkProtect 会检测自身是否被修改。ZjDroid 作为 Xposed 模块以 APK 形式安装时，常规加载方式会触发它的检测，导致脱壳失败。

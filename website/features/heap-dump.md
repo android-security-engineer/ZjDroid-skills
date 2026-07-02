@@ -68,6 +68,17 @@ public class HeapDump {
 和 `dump_class` 复用 `DexFile.getClassNameList` 一样，这里复用了 Android 自带的 `android.os.Debug.dumpHprofData(String fileName)`。这是系统提供的标准 hprof 导出方法，ZjDroid 只是在目标进程里替它调一下——产物和 `am dumpheap` 命令导出的是同一种格式。
 :::
 
+整个堆 dump 流程（注意：全程复用系统 API，非自研）：
+
+```mermaid
+flowchart LR
+    A["dump_heap 指令"] --> B["DumpHeapCommandHandler"]
+    B --> C["HeapDump.dumpHeap(path)"]
+    C --> D["android.os.Debug.dumpHprofData(filename)<br/>系统 API 封装，非自研"]
+    D --> E[".hprof 文件<br/>/data/data/包名/files/PID.hprof"]
+```
+
+
 ### 3. 为什么要在目标进程内调
 
 `Debug.dumpHprofData` dump 的是**当前进程**的堆。ZjDroid 已注入目标进程，在目标进程内调用它，dump 出来的自然就是目标 App 的 Java 堆——这正是我们想要的，无需额外指定 PID。

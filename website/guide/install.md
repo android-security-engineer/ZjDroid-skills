@@ -1,5 +1,18 @@
 # 安装与启用模块
 
+### 安装启用流程
+
+```mermaid
+flowchart TD
+    A["adb install zjdroid.apk"] --> B["打开 Xposed Installer<br/>→ 模块页"]
+    B --> C["勾选启用 ZjDroid<br/>（collect runtime information）"]
+    C --> D["软重启设备"]
+    D --> E["启动目标 App"]
+    E --> F["Xposed 注入<br/>ReverseXposedModule.handleLoadPackage"]
+    F --> G["hook Application.onCreate 之后<br/>注册 CommandBroadcastReceiver"]
+    G --> H["logcat 验证<br/>the package = * has hook"]
+```
+
 ## 1. 安装 ZjDroid APK
 
 把编译好的 ZjDroid APK 安装到设备上：

@@ -78,6 +78,19 @@ public abstract class AbstractBahaviorHookCallBack extends MethodHookCallBack {
 
 所以每个具体 Hook 只需写 `descParam`，把关心的参数 log 出来即可。框架自动补上"调用了哪个方法"。
 
+整个监控链路（从注入到日志输出）：
+
+```mermaid
+flowchart TD
+    A["ReverseXposedModule.handleLoadPackage"] --> B["ApiMonitorHookManager.startMonitor"]
+    B --> C["批量注册 17 个 Hook"]
+    C --> D["运行时拦截敏感 API 调用"]
+    D --> E["AbstractBahaviorHookCallBack.descParam<br/>描述参数细节"]
+    E --> F["Logger.log_behavior<br/>输出到 zjdroid-apimonitor tag"]
+```
+
+> **关于 Hook 数量的说明**：源码目录 `apimonitor/` 下有 20 个文件，但真正启用的 Hook 类是 **17 个**——其余 3 个为基础设施：`AbstractBahaviorHookCallBack`（通用回调基类）、`ApiMonitorHook`（Hook 抽象基类）、`ApiMonitorHookManager`（管理器）。这 17 类 Hook 覆盖：SmsManager、TelephonyManager、MediaRecorder、AccountManager、ActivityManager、AlarmManager、ConnectivityManager、ContentResolver、ContextImpl、PackageManager、Runtime、ActivityThread、AudioRecord、Camera、NetWork、NotificationManager、ProcessBuilder。
+
 ## 一个完整示例：SmsManagerHook
 
 以短信监控为例，看一个 Hook 怎么写：

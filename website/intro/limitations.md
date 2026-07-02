@@ -2,6 +2,32 @@
 
 诚实地讲清楚 ZjDroid 能用在什么地方、在什么地方会失效，是这份教学文档的重要部分。
 
+### 能力边界一览
+
+```mermaid
+flowchart LR
+    Z["ZjDroid"]
+
+    subgraph OK["✅ 适用"]
+        O1["Dalvik 运行时<br/>Android 2.2~4.4"]
+        O2["DEX 内存 dump / BackSmali 脱壳"]
+        O3["17 类敏感 API 监控"]
+        O4["Lua 动态触发解密逻辑"]
+    end
+
+    subgraph NO["❌ 局限"]
+        N1["仅 Dalvik 非 ART<br/>Android 5.0+ 失效"]
+        N2["依赖 Root + Xposed 框架"]
+        N3["结果仅靠 logcat 回传"]
+        N4["dump_mem 需已知起始地址"]
+        N5["NativeHook 检测为死代码<br/>未启用"]
+        N6["ApkProtect 需额外伪装为 jar"]
+    end
+
+    Z --> OK
+    Z --> NO
+```
+
 ## 适用场景
 
 ZjDroid 适合以下场景：
