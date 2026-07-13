@@ -25,3 +25,9 @@ proguard/
 # Gradle (Task 1 新增)
 app/build/
 *.iml
+
+# Python (Task 4 新增)
+__pycache__/
+*.pyc
+sdk/zjdroid_agent.egg-info/
+sdk/build/
