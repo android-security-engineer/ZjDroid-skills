@@ -16,6 +16,7 @@ command -v adb     >/dev/null && ok "adb: $(adb --version | head -1)" || fail "a
 command -v python3 >/dev/null && ok "python3: $(python3 --version)"   || fail "python3 缺失 → apt install python3"
 python3 -c "import sys; sys.exit(0 if sys.version_info>=(3,10) else 1)" 2>/dev/null \
   && ok "python3 ≥3.10" || fail "python3 版本 <3.10 → 升级"
+command -v java >/dev/null && ok "java: $(java -version 2>&1 | head -1)" || warn "java 缺失 → 仅路径 B（源码编译）需要，路径 A（Release 下载）不需要"
 
 echo "[2/5] gh 认证..."
 gh auth status >/dev/null 2>&1 && ok "gh 已认证" || fail "gh 未认证 → gh auth login"
