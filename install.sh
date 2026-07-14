@@ -32,14 +32,19 @@ if [[ $BUILD_MODE -eq 1 ]]; then
   echo "[1/6] 本地构建 APK..."
   ./gradlew :app:assembleRelease -x lint
   APK="$LOCAL_APK"
+  echo "  校验本地构建产物..."
+  bash scripts/check-apk.sh "$APK" || { echo "ERROR: 本地构建产物校验失败，终止。"; exit 1; }
 else
   echo "[1/6] 从 GitHub Release 下载预编译 APK..."
   mkdir -p "$DLDIR"
   if gh release download --repo "$REPO" --pattern "zjdroid.apk" --dir "$DLDIR" 2>/dev/null; then
     APK="$DLDIR/zjdroid.apk"
+    echo "  校验下载产物..."
+    bash scripts/check-apk.sh "$APK" || { echo "ERROR: 下载产物校验失败，终止。"; exit 1; }
   else
     echo "  Release 无产物，等待 CI 构建..."
     bash scripts/wait-release.sh && APK="$DLDIR/zjdroid.apk" || { echo "  等待产物失败，可用 --build 本地构建。"; exit 3; }
+    bash scripts/check-apk.sh "$APK" || { echo "ERROR: 产物校验失败，终止。"; exit 1; }
   fi
 fi
 [[ -f "$APK" ]] || { echo "ERROR: APK 不存在: $APK"; exit 1; }
