@@ -35,6 +35,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), '../proguard-project.txt'
+            // 未签名 APK 在 Android 7+ 装不上(INSTALL_PARSE_FAILED_NO_CERTIFICATES)，release
+            // 复用 debug 签名让产物可直接 adb install。正式发布时替换为专用 release keystore。
+            signingConfig signingConfigs.debug
         }
     }
 
