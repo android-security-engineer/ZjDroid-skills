@@ -24,11 +24,13 @@ else
 fi
 
 echo "[3/4] Xposed 模块已注册..."
+# 兼容: adb root 后 shell 即 root, 否则 su 0(redroid/Magisk) / su -c(经典)
+if adb shell id 2>/dev/null | grep -q 'uid=0'; then SU_PREFIX=""; else SU_PREFIX="su 0 "; fi
 REG=0
-adb shell su -c "test -f /data/adb/lspd/config/modules_config.db" 2>/dev/null && \
-  adb shell su -c "sqlite3 /data/adb/lspd/config/modules_config.db \"SELECT enabled FROM modules WHERE module_pkg_name='$PKG';\"" 2>/dev/null | grep -q 1 && { echo "  ✓ LSPosed 已启用"; REG=1; }
-adb shell su -c "grep -q $PKG /data/data/de.robv.android.xposed.installer/conf/modules.list" 2>/dev/null && { echo "  ✓ 经典 Xposed modules.list 已含"; REG=1; }
-[[ $REG -eq 0 ]] && echo "  ⚠ 无法自动确认模块启用，请用 Xposed Manager 核对 $PKG 已勾选"
+adb shell "${SU_PREFIX}test -f /data/adb/lspd/config/modules_config.db" 2>/dev/null && \
+  adb shell "${SU_PREFIX}sqlite3 /data/adb/lspd/config/modules_config.db \"SELECT enabled FROM modules WHERE module_pkg_name='$PKG';\"" 2>/dev/null | grep -q 1 && { echo "  ✓ LSPosed 已启用"; REG=1; }
+adb shell "${SU_PREFIX}grep -q $PKG /data/data/de.robv.android.xposed.installer/conf/modules.list" 2>/dev/null && { echo "  ✓ 经典 Xposed modules.list 已含"; REG=1; }
+[[ $REG -eq 0 ]] && echo "  ⚠ 无法自动确认模块启用（设备可能无 Xposed 框架），请用 Xposed Manager 核对 $PKG 已勾选"
 
 echo "[4/4] logcat 出现 zjdroid tag（需目标进程被注入）..."
 echo "  提示: 先拉起一个目标 App，ZjDroid 注入后 logcat 会有 zjdroid-shell-<pkg> tag"
